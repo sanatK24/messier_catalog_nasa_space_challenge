@@ -323,13 +323,44 @@ let osdViewer = null;
 function openDZI(dziPath){
   const osdWrap = document.getElementById('osdViewer');
   if(osdViewer){
-    try{ osdViewer.open(`messier_dzi/${dziPath}`); return; }catch(e){console.warn(e)}
+    try{ 
+      osdViewer.open(`messier_dzi/${dziPath}`); 
+      return; 
+    }catch(e){console.warn(e)}
   }
   osdViewer = OpenSeadragon({
     id: 'osdViewer',
     prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@4.0.0/build/openseadragon/images/',
     tileSources: `messier_dzi/${dziPath}`,
-    showNavigator:true
+    showNavigator: true,
+    // Enhanced zoom settings for all 7 DZI levels
+    minZoomLevel: 0.5,        // Allow zoom out
+    maxZoomLevel: 20,         // Allow deep zoom in (covers all 7 levels)
+    defaultZoomLevel: 1,      // Start at fit-to-screen
+    visibilityRatio: 0.5,     // Allow panning outside bounds
+    constrainDuringPan: false,
+    // Better image quality
+    immediateRender: false,
+    blendTime: 0.1,
+    animationTime: 1.2,
+    // Enable all zoom gestures
+    gestureSettingsMouse: {
+      clickToZoom: true,
+      dblClickToZoom: true,
+      scrollToZoom: true,
+      pinchToZoom: true
+    },
+    gestureSettingsTouch: {
+      clickToZoom: false,
+      dblClickToZoom: true,
+      scrollToZoom: false,
+      pinchToZoom: true
+    },
+    // Show all controls for better navigation
+    showZoomControl: true,
+    showHomeControl: true,
+    showFullPageControl: true,
+    showRotationControl: false
   });
 }
 
