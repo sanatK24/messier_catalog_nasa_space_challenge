@@ -18,12 +18,21 @@
         <div class="glitch-text" data-text="DEEP SKY NAVIGATOR">DEEP SKY NAVIGATOR</div>
       </div>
       <div class="loading-status">
+        <div class="loading-quadrant">
+          <svg class="progress-ring" width="200" height="200">
+            <circle class="progress-ring-bg" cx="100" cy="100" r="90"/>
+            <circle class="progress-ring-q1" cx="100" cy="100" r="90"/>
+            <circle class="progress-ring-q2" cx="100" cy="100" r="90"/>
+            <circle class="progress-ring-q3" cx="100" cy="100" r="90"/>
+            <circle class="progress-ring-q4" cx="100" cy="100" r="90"/>
+          </svg>
+          <div class="loading-center">
+            <span class="status-progress">0%</span>
+          </div>
+        </div>
         <div class="status-line">
           <span class="status-label">INITIALIZING SYSTEMS</span>
-          <span class="status-progress">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill"></div>
+          <span class="quadrant-label">QUADRANT 1/4</span>
         </div>
         <div class="loading-details"></div>
       </div>

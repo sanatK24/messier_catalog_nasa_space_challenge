@@ -11,13 +11,46 @@ async function fetchJSON(path){
   return res.json();
 }
 
+function setQuadrantProgress(quadrant, progress) {
+  const circle = document.querySelector(`.progress-ring-q${quadrant}`);
+  const circumference = 2 * Math.PI * 90; // 2πr where r=90
+  const offset = circumference - (progress / 25) * circumference;
+  circle.style.strokeDashoffset = offset;
+}
+
+function activateQuadrant(quadrant) {
+  // Remove active class from all quadrants
+  document.querySelectorAll('.progress-ring circle').forEach(circle => {
+    circle.classList.remove('active');
+  });
+  
+  // Add active class to current quadrant
+  const activeCircle = document.querySelector(`.progress-ring-q${quadrant}`);
+  activeCircle.classList.add('active');
+  activeCircle.style.opacity = '1';
+}
+
 async function updateLoadingProgress(progress, detail) {
-  const progressBar = document.querySelector('.progress-fill');
   const progressText = document.querySelector('.status-progress');
   const detailsText = document.querySelector('.loading-details');
+  const quadrantLabel = document.querySelector('.quadrant-label');
   
-  progressBar.style.width = `${progress}%`;
-  progressText.textContent = `${progress}%`;
+  // Calculate which quadrant we're in
+  const quadrant = Math.floor(progress / 25) + 1;
+  const quadrantProgress = progress % 25;
+  
+  // Update quadrant display
+  quadrantLabel.textContent = `QUADRANT ${quadrant}/4`;
+  activateQuadrant(quadrant);
+  
+  // Set progress for current and completed quadrants
+  for (let i = 1; i < quadrant; i++) {
+    setQuadrantProgress(i, 25); // Fill completed quadrants
+    document.querySelector(`.progress-ring-q${i}`).style.opacity = '1';
+  }
+  setQuadrantProgress(quadrant, quadrantProgress);
+  
+  progressText.textContent = `${Math.floor(progress)}%`;
   if (detail) {
     detailsText.textContent = detail;
   }

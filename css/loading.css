@@ -99,23 +99,98 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-.progress-bar {
-  height: 2px;
-  background: var(--bg-surface);
-  border-radius: 1px;
-  overflow: hidden;
+.loading-quadrant {
   position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
 }
 
-.progress-fill {
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+  fill: none;
+  stroke-width: 4;
+}
+
+.progress-ring-bg {
+  stroke: var(--bg-surface);
+}
+
+.progress-ring circle {
+  stroke-dasharray: 565.48; /* 2πr = 2 * π * 90 */
+  stroke-dashoffset: 565.48;
+  transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+.progress-ring-q1 {
+  stroke: var(--accent-primary);
+  opacity: 0;
+}
+
+.progress-ring-q2 {
+  stroke: var(--accent-secondary);
+  opacity: 0;
+}
+
+.progress-ring-q3 {
+  stroke: var(--accent-highlight);
+  opacity: 0;
+}
+
+.progress-ring-q4 {
+  stroke: var(--text-primary);
+  opacity: 0;
+}
+
+.loading-center {
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: var(--accent-primary);
-  width: 0%;
-  transition: width 0.3s ease-out;
-  box-shadow: 0 0 10px var(--accent-glow);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.status-progress {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--accent-highlight);
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.quadrant-label {
+  font-size: 0.75rem;
+  color: var(--accent-secondary);
+  letter-spacing: 0.2em;
+  animation: textPulse 2s infinite;
+}
+
+/* Active quadrant animations */
+.progress-ring circle.active {
+  opacity: 1;
+  animation: ringPulse 2s infinite;
+}
+
+@keyframes ringPulse {
+  0% {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 2px var(--accent-glow));
+  }
+  50% {
+    stroke-width: 6;
+    filter: drop-shadow(0 0 8px var(--accent-glow));
+  }
+  100% {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 2px var(--accent-glow));
+  }
 }
 
 .loading-details {
