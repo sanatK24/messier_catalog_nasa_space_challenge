@@ -11,16 +11,57 @@ async function fetchJSON(path){
   return res.json();
 }
 
-async function init(){
-  messier = await fetchJSON(DATA_PATH);
-  const manifest = await fetchJSON(DZI_MANIFEST);
-  manifest.forEach(item => dziMap[item.id] = item);
+async function updateLoadingProgress(progress, detail) {
+  const progressBar = document.querySelector('.progress-fill');
+  const progressText = document.querySelector('.status-progress');
+  const detailsText = document.querySelector('.loading-details');
+  
+  progressBar.style.width = `${progress}%`;
+  progressText.textContent = `${progress}%`;
+  if (detail) {
+    detailsText.textContent = detail;
+  }
+}
 
-  buildList();
-  setupMap();
-  setupSearch();
-  setupFilters();
-  setupSkymapOverlay();
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loadingScreen');
+  loadingScreen.classList.add('hidden');
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+  }, 500);
+}
+
+async function init(){
+  try {
+    updateLoadingProgress(10, 'Loading catalog data...');
+    messier = await fetchJSON(DATA_PATH);
+    
+    updateLoadingProgress(30, 'Loading image manifest...');
+    const manifest = await fetchJSON(DZI_MANIFEST);
+    manifest.forEach(item => dziMap[item.id] = item);
+    
+    updateLoadingProgress(50, 'Building object list...');
+    buildList();
+    
+    updateLoadingProgress(70, 'Initializing sky map...');
+    setupMap();
+    
+    updateLoadingProgress(85, 'Setting up interface...');
+    setupSearch();
+    setupFilters();
+    
+    updateLoadingProgress(95, 'Preparing skymap overlay...');
+    setupSkymapOverlay();
+    
+    updateLoadingProgress(100, 'Launch complete');
+    
+    // Hide loading screen after a brief delay
+    setTimeout(hideLoadingScreen, 500);
+  } catch (error) {
+    console.error('Initialization error:', error);
+    document.querySelector('.status-label').textContent = 'ERROR';
+    document.querySelector('.loading-details').textContent = 'Failed to initialize. Please refresh.';
+  }
 }
 
 let skymapLayer = null;

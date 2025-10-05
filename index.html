@@ -7,9 +7,28 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/loading.css" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-header">
+        <div class="glitch-text" data-text="MESSIER">MESSIER</div>
+        <div class="glitch-text" data-text="DEEP SKY NAVIGATOR">DEEP SKY NAVIGATOR</div>
+      </div>
+      <div class="loading-status">
+        <div class="status-line">
+          <span class="status-label">INITIALIZING SYSTEMS</span>
+          <span class="status-progress">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="loading-details"></div>
+      </div>
+    </div>
+  </div>
     <div class="dashboard">
     <header class="topbar">
       <div class="header-left">
