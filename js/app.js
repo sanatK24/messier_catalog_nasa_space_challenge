@@ -161,9 +161,19 @@ function buildList(){
   countEl.textContent = `${messier.length} objects`;
 }
 
+let currentView = 'sky'; // 'sky' or 'grid'
+
 function setupMap(){
   // We'll map RA/DEC onto a plate carrée projection: x = ra_decimal, y = dec_decimal
   map = L.map('map', {worldCopyJump:false, zoomControl:true, minZoom:1, maxZoom:12}).setView([0,180],2);
+  
+  // Update coordinates display on mouse move
+  map.on('mousemove', (e) => {
+    const lat = e.latlng.lat.toFixed(2);
+    const lng = (e.latlng.lng + 180).toFixed(2); // Convert back to RA
+    document.getElementById('ra').textContent = `${lng}°`;
+    document.getElementById('dec').textContent = `${lat}°`;
+  });
   
   // Create a dark background
   const darkLayer = L.tileLayer('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', {
@@ -315,5 +325,104 @@ function openDZI(dziPath){
 document.addEventListener('click', (e)=>{
   if(e.target && e.target.id==='closeModal'){ document.getElementById('detailModal').classList.add('hidden'); }
 });
+
+// Map control functions
+function toggleMapView() {
+  currentView = currentView === 'sky' ? 'grid' : 'sky';
+  if (currentView === 'grid') {
+    if (skymapLayer) map.removeLayer(skymapLayer);
+    // Add grid lines (simplified for demo)
+    L.grid().addTo(map);
+  } else {
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Grid) map.removeLayer(layer);
+    });
+    if (!skymapLayer) {
+      skymapLayer = L.tileLayer('output/tiles/{z}/{x}/{y}.png', {
+        maxZoom: 6,
+        minZoom: 0,
+        attribution: 'Messier Skymap'
+      }).addTo(map);
+    }
+  }
+}
+
+function zoomToFit() {
+  map.setView([0, 180], 2, { animate: true });
+}
+
+function toggleGrid() {
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Grid) {
+      map.removeLayer(layer);
+      return;
+    }
+  });
+  L.grid().addTo(map);
+}
+
+// Add custom Grid control to Leaflet
+L.Grid = L.LayerGroup.extend({
+  initialize: function(options) {
+    L.LayerGroup.prototype.initialize.call(this);
+    this.options = L.extend({}, {
+      xticks: 24,
+      yticks: 18
+    }, options);
+  },
+
+  onAdd: function(map) {
+    this._map = map;
+    this._draw();
+    return this;
+  },
+
+  _draw: function() {
+    let raLines = [], decLines = [];
+    
+    // RA lines (verticals)
+    for (let i = -180; i <= 180; i += 30) {
+      const line = L.polyline([[-90, i], [90, i]], {
+        color: 'rgba(64, 205, 255, 0.2)',
+        weight: 1
+      });
+      this.addLayer(line);
+      
+      // Labels
+      const ra = ((i + 180) % 360).toFixed(0);
+      const label = L.marker([90, i], {
+        icon: L.divIcon({
+          className: 'grid-label',
+          html: `${ra}°`,
+          iconSize: [40, 20]
+        })
+      });
+      this.addLayer(label);
+    }
+    
+    // Dec lines (horizontals)
+    for (let i = -75; i <= 75; i += 15) {
+      const line = L.polyline([[i, -180], [i, 180]], {
+        color: 'rgba(64, 205, 255, 0.2)',
+        weight: 1
+      });
+      this.addLayer(line);
+      
+      // Labels
+      const label = L.marker([i, -180], {
+        icon: L.divIcon({
+          className: 'grid-label',
+          html: `${i}°`,
+          iconSize: [30, 20]
+        })
+      });
+      this.addLayer(label);
+    }
+  }
+});
+
+L.grid = function(options) {
+  return new L.Grid(options);
+};
 
 window.addEventListener('load', init);

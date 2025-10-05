@@ -84,6 +84,14 @@
   color: var(--accent-highlight);
 }
 
+.grid-label {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
 .view-mode {
   position: absolute;
   top: 20px;
