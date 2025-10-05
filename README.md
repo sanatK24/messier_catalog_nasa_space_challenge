@@ -185,6 +185,5 @@ This project is licensed under the MIT License. See LICENSE file for details.
 
 ---
 
-*Project developed for NASA Space Apps Challenge 2025*  
-*Location: [Your Location]*  
-*Team: [Your Team Name]*
+*Project developed for NASA Space Apps Challenge 2025*    
+*Team: DataDrift*

@@ -183,11 +183,23 @@ function setupMap(){
   // Add skymap tiles immediately
   skymapLayer = L.tileLayer('output/tiles/{z}/{x}/{y}.png', {maxZoom:6, minZoom:0, attribution: 'Messier Skymap'}).addTo(map);
 
+  // Color mapping for different object types
+  function getObjectColor(type) {
+    if (!type) return '#7dd3fc'; // Default color
+    if (type.includes('Galaxy')) return '#007fff'; // Blue
+    if (type.includes('Open Cluster')) return '#00ff88'; // Green
+    if (type.includes('Globular Cluster')) return '#ffd700'; // Gold
+    if (type.includes('Planetary Nebula')) return '#ff00ff'; // Magenta
+    if (type.includes('Emission Nebula')) return '#ff4444'; // Red
+    return '#7dd3fc'; // Default color
+  }
+
   // Convert RA (0-360) and Dec (-90..+90) to lat/lng for Leaflet: lat = dec, lng = ra-180
   messier.forEach(o=>{
     const lat = o.dec_decimal;
     const lng = o.ra_decimal - 180;
-    const marker = L.circleMarker([lat,lng],{radius:6,fillColor:'#7dd3fc',color:'#66bfbf',weight:1,fillOpacity:0.9}).addTo(map);
+    const color = getObjectColor(o.type);
+    const marker = L.circleMarker([lat,lng],{radius:6,fillColor:color,color:color,weight:1,fillOpacity:0.9}).addTo(map);
     marker.on('click', ()=> openDetail(o));
     marker.bindTooltip(`${o.id} — ${o.name}`, {direction:'top',offset:[0,-8]});
     markers.push({id:o.id, marker});
