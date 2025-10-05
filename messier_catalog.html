@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messier Catalog - Interactive Sky Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            z-index: 1000;
+            border-bottom: 2px solid #333;
+        }
+
+        #header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            background: #333;
+            border-color: #666;
+        }
+
+        .filter-btn.active {
+            background: #0066cc;
+            border-color: #0088ff;
+        }
+
+        #search {
+            padding: 8px 12px;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        #skymap-container {
+            position: fixed;
+            top: 120px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+
+        #skymap {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #000000 100%);
+            position: relative;
+            cursor: grab;
+        }
+
+        #skymap:active {
+            cursor: grabbing;
+        }
+
+        .messier-object {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            transform: translate(-50%, -50%);
+        }
+
+        .messier-object:hover {
+            transform: translate(-50%, -50%) scale(1.8);
+            z-index: 100;
+        }
+
+        .messier-object.galaxy {
+            background: #ff6b9d;
+            box-shadow: 0 0 10px #ff6b9d;
+        }
+
+        .messier-object.nebula {
+            background: #4ecdc4;
+            box-shadow: 0 0 10px #4ecdc4;
+        }
+
+        .messier-object.cluster {
+            background: #ffd93d;
+            box-shadow: 0 0 10px #ffd93d;
+        }
+
+        .messier-object.other {
+            background: #95e1d3;
+            box-shadow: 0 0 10px #95e1d3;
+        }
+
+        .messier-label {
+            position: absolute;
+            font-size: 10px;
+            color: #fff;
+            pointer-events: none;
+            white-space: nowrap;
+            text-shadow: 1px 1px 2px #000;
+            transform: translate(-50%, -20px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .messier-object:hover + .messier-label {
+            opacity: 1;
+        }
+
+        #info-panel {
+            position: fixed;
+            right: 20px;
+            top: 140px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            display: none;
+            max-height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+
+        #info-panel.visible {
+            display: block;
+        }
+
+        #info-panel h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #0088ff;
+        }
+
+        #info-panel .info-item {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        #info-panel .info-label {
+            color: #888;
+            display: inline-block;
+            width: 100px;
+        }
+
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        #stats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 12px;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🌌 Messier Catalog - Interactive Sky Map</h1>
+        <div id="controls">
+            <input type="text" id="search" placeholder="Search Messier objects...">
+            <div class="filter-group">
+                <button class="filter-btn active" data-type="all">All (110)</button>
+                <button class="filter-btn" data-type="galaxy">Galaxies</button>
+                <button class="filter-btn" data-type="nebula">Nebulae</button>
+                <button class="filter-btn" data-type="cluster">Clusters</button>
+                <button class="filter-btn" data-type="other">Other</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="skymap-container">
+        <div id="skymap"></div>
+    </div>
+
+    <div id="info-panel">
+        <h2 id="info-title">Select an object</h2>
+        <div id="info-content"></div>
+    </div>
+
+    <div id="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff6b9d; box-shadow: 0 0 5px #ff6b9d;"></div>
+            <span>Galaxies</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4ecdc4; box-shadow: 0 0 5px #4ecdc4;"></div>
+            <span>Nebulae</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffd93d; box-shadow: 0 0 5px #ffd93d;"></div>
+            <span>Clusters</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #95e1d3; box-shadow: 0 0 5px #95e1d3;"></div>
+            <span>Other</span>
+        </div>
+    </div>
+
+    <div id="stats">
+        <div>Visible Objects: <span id="visible-count">110</span></div>
+        <div>Selected: <span id="selected-object">None</span></div>
+    </div>
+
+    <script>
+        let messierData = [];
+        let currentFilter = 'all';
+        let selectedObject = null;
+
+        // Load Messier data
+        fetch('messier_data.json')
+            .then(response => response.json())
+            .then(data => {
+                messierData = data;
+                initializeSkyMap();
+            });
+
+        function getObjectCategory(type) {
+            const typeStr = type.toLowerCase();
+            if (typeStr.includes('galaxy')) return 'galaxy';
+            if (typeStr.includes('nebula')) return 'nebula';
+            if (typeStr.includes('cluster')) return 'cluster';
+            return 'other';
+        }
+
+        function initializeSkyMap() {
+            const skymap = document.getElementById('skymap');
+            const width = skymap.offsetWidth;
+            const height = skymap.offsetHeight;
+
+            // Add background stars
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random() * 0.8;
+                skymap.appendChild(star);
+            }
+
+            // Plot Messier objects
+            messierData.forEach(obj => {
+                // Convert RA (0-360) and Dec (-90 to +90) to screen coordinates
+                const x = (obj.ra_decimal / 360) * width;
+                const y = ((90 - obj.dec_decimal) / 180) * height;
+
+                const category = getObjectCategory(obj.type);
+
+                // Create object marker
+                const marker = document.createElement('div');
+                marker.className = `messier-object ${category}`;
+                marker.style.left = x + 'px';
+                marker.style.top = y + 'px';
+                marker.dataset.id = obj.id;
+                marker.dataset.category = category;
+
+                // Create label
+                const label = document.createElement('div');
+                label.className = 'messier-label';
+                label.textContent = obj.id;
+                label.style.left = x + 'px';
+                label.style.top = y + 'px';
+
+                marker.addEventListener('click', () => showObjectInfo(obj));
+
+                skymap.appendChild(marker);
+                skymap.appendChild(label);
+            });
+
+            updateStats();
+        }
+
+        function showObjectInfo(obj) {
+            selectedObject = obj;
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+
+            title.textContent = `${obj.id} - ${obj.name}`;
+            content.innerHTML = `
+                <div class="info-item"><span class="info-label">Type:</span>${obj.type}</div>
+                <div class="info-item"><span class="info-label">Constellation:</span>${obj.constellation}</div>
+                <div class="info-item"><span class="info-label">RA:</span>${obj.ra}</div>
+                <div class="info-item"><span class="info-label">Dec:</span>${obj.dec}</div>
+                <div class="info-item"><span class="info-label">Magnitude:</span>${obj.magnitude}</div>
+            `;
+
+            panel.classList.add('visible');
+            document.getElementById('selected-object').textContent = obj.id;
+        }
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.type;
+                applyFilter();
+            });
+        });
+
+        function applyFilter() {
+            const objects = document.querySelectorAll('.messier-object');
+            const labels = document.querySelectorAll('.messier-label');
+            let visibleCount = 0;
+
+            objects.forEach((obj, index) => {
+                const category = obj.dataset.category;
+                const shouldShow = currentFilter === 'all' || category === currentFilter;
+                
+                obj.style.display = shouldShow ? 'block' : 'none';
+                labels[index].style.display = shouldShow ? 'block' : 'none';
+                
+                if (shouldShow) visibleCount++;
+            });
+
+            updateStats();
+        }
+
+        // Search functionality
+        document.getElementById('search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const objects = document.querySelectorAll('.messier-object');
+            const labels = document.querySelectorAll('.messier-label');
+
+            objects.forEach((obj, index) => {
+                const objData = messierData.find(m => m.id === obj.dataset.id);
+                const matches = objData.id.toLowerCase().includes(searchTerm) ||
+                               objData.name.toLowerCase().includes(searchTerm) ||
+                               objData.type.toLowerCase().includes(searchTerm);
+
+                const categoryMatch = currentFilter === 'all' || obj.dataset.category === currentFilter;
+                const shouldShow = matches && categoryMatch;
+
+                obj.style.display = shouldShow ? 'block' : 'none';
+                labels[index].style.display = shouldShow ? 'block' : 'none';
+            });
+
+            updateStats();
+        });
+
+        function updateStats() {
+            const visibleObjects = document.querySelectorAll('.messier-object[style*="display: block"], .messier-object:not([style*="display: none"])');
+            document.getElementById('visible-count').textContent = visibleObjects.length;
+        }
+
+        // Pan functionality
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        const skymap = document.getElementById('skymap');
+        const container = document.getElementById('skymap-container');
+
+        skymap.addEventListener('mousedown', (e) => {
+            if (e.target === skymap || e.target.classList.contains('star')) {
+                isDragging = true;
+                startX = e.pageX - container.offsetLeft;
+                startY = e.pageY - container.offsetTop;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+            }
+        });
+
+        skymap.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const y = e.pageY - container.offsetTop;
+            const walkX = (x - startX) * 1;
+            const walkY = (y - startY) * 1;
+            container.scrollLeft = scrollLeft - walkX;
+            container.scrollTop = scrollTop - walkY;
+        });
+
+        skymap.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        skymap.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+    </script>
+</body>
+</html>

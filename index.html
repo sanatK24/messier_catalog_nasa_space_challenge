@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Messier Skymap — Hackathon Prototype</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+    <header class="topbar">
+      <div class="header-left">
+        <h1>MESSIER SKYMAP</h1>
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text">SYSTEM ACTIVE</span>
+        </div>
+      </div>
+      <div class="search">
+        <div class="search-wrapper">
+          <input id="search" placeholder="Search Messier objects (e.g. M31 or Andromeda)" />
+          <button id="searchBtn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+          </button>
+        </div>
+        <button id="toggleSkymap" class="btn btn-accent" title="Toggle stitched skymap overlay">
+          <span class="btn-text">TOGGLE SKYMAP</span>
+          <span class="btn-icon">⚡</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="container">
+      <aside class="sidebar">
+        <section class="sidebar-section">
+          <h2>DEEP SPACE OBJECTS</h2>
+          <div class="filters">
+            <select id="typeFilter" class="select-primary">
+              <option value="all">All Objects</option>
+              <option value="Galaxy">Galaxies</option>
+              <option value="Open Cluster">Open Clusters</option>
+              <option value="Globular Cluster">Globular Clusters</option>
+              <option value="Planetary Nebula">Planetary Nebulae</option>
+              <option value="Emission Nebula">Emission Nebulae</option>
+            </select>
+          </div>
+        </section>
+        
+        <section class="sidebar-section">
+          <div class="object-list-header">
+            <h3>CATALOG ENTRIES</h3>
+            <span class="object-count" id="objectCount">0 objects</span>
+          </div>
+          <ul id="objectList" class="object-list"></ul>
+        </section>
+
+        <div class="credits">
+          <div class="system-info">
+            <div class="info-row">
+              <span class="info-label">DATA SOURCE</span>
+              <span class="info-value">MESSIER CATALOG</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">IMAGING</span>
+              <span class="info-value">DEEP ZOOM DZI</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    <main class="main">
+      <div id="map"></div>
+    </main>
+  </div>
+
+  <!-- Modal / detail panel -->
+  <div id="detailModal" class="modal hidden">
+      <div class="modal-content">
+      <button id="closeModal" class="close">✕</button>
+      <div class="modal-body">
+        <div class="info">
+          <h2 id="objTitle"></h2>
+          <p id="objType"></p>
+          <p id="objCoords"></p>
+          <p id="objConst"></p>
+          <p id="objMag"></p>
+          <p id="objHistory"></p>
+          <p id="objLinks"></p>
+          <h3>Observational Data</h3>
+          <ul id="obsData">
+            <li>Best season: <span id="bestSeason">Visible year-round</span></li>
+            <li>Apparent size: <span id="appSize">—</span></li>
+            <li>Notes for amateurs: <span id="amateurNotes">Use low magnification for extended objects.</span></li>
+          </ul>
+        </div>
+        <div class="viewer">
+          <div id="thumbWrap"><img id="thumb" alt="thumbnail"/></div>
+          <div id="osdViewer" class="osd-viewer hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.0.0/build/openseadragon/openseadragon.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

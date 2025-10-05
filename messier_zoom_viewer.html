@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messier Catalog - Zoomable Gallery</title>
+    <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.1/build/openseadragon/openseadragon.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 15px 20px;
+            z-index: 1000;
+            border-bottom: 2px solid #333;
+            backdrop-filter: blur(10px);
+        }
+
+        #header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #search {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 250px;
+            transition: all 0.3s;
+        }
+
+        #search:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            background: #2a2a2a;
+            border-color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 100px;
+            bottom: 0;
+            width: 280px;
+            background: rgba(0, 0, 0, 0.95);
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .messier-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .messier-item:hover {
+            background: #2a2a2a;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .messier-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .messier-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+
+        .messier-info {
+            flex: 1;
+        }
+
+        .messier-id {
+            font-weight: bold;
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        .messier-name {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        #viewer-container {
+            position: fixed;
+            left: 280px;
+            top: 100px;
+            right: 0;
+            bottom: 0;
+        }
+
+        #openseadragon-viewer {
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        #info-panel {
+            position: fixed;
+            right: 20px;
+            top: 120px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+        }
+
+        #info-panel h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .info-item {
+            margin: 10px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: #888;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        #zoom-controls {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 200;
+        }
+
+        .zoom-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .zoom-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🌌 Messier Catalog - Zoomable Gallery</h1>
+        <div id="controls">
+            <input type="text" id="search" placeholder="Search Messier objects...">
+            <button class="filter-btn active" data-type="all">All Objects</button>
+            <button class="filter-btn" data-type="galaxy">Galaxies</button>
+            <button class="filter-btn" data-type="nebula">Nebulae</button>
+            <button class="filter-btn" data-type="cluster">Clusters</button>
+        </div>
+    </div>
+
+    <div id="sidebar"></div>
+
+    <div id="viewer-container">
+        <div id="openseadragon-viewer"></div>
+        <div class="loading">Loading images...</div>
+    </div>
+
+    <div id="info-panel">
+        <h2 id="info-title">Select an object</h2>
+        <div id="info-content">
+            <div class="info-item">
+                <span class="info-label">Click on any Messier object to view</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="zoom-controls">
+        <button class="zoom-btn" id="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-btn" id="zoom-out" title="Zoom Out">−</button>
+        <button class="zoom-btn" id="home" title="Reset View">⌂</button>
+    </div>
+
+    <script>
+        let viewer;
+        let messierData = [];
+        let currentFilter = 'all';
+        let currentObject = null;
+
+        // Load Messier data
+        Promise.all([
+            fetch('messier_data.json').then(r => r.json()),
+            fetch('messier_dzi/manifest.json').then(r => r.json())
+        ]).then(([data, manifest]) => {
+            messierData = data.map(obj => {
+                const dziInfo = manifest.find(m => m.id === obj.id);
+                return { ...obj, dziPath: dziInfo ? `messier_dzi/${dziInfo.dzi}` : null };
+            });
+            
+            initializeSidebar();
+            initializeViewer();
+        }).catch(err => {
+            console.error('Error loading data:', err);
+            document.querySelector('.loading').textContent = 'Error loading data. Make sure to run batch_convert_to_dzi.py first!';
+        });
+
+        function getObjectCategory(type) {
+            const typeStr = type.toLowerCase();
+            if (typeStr.includes('galaxy')) return 'galaxy';
+            if (typeStr.includes('nebula')) return 'nebula';
+            if (typeStr.includes('cluster')) return 'cluster';
+            return 'other';
+        }
+
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            
+            messierData.forEach(obj => {
+                const item = document.createElement('div');
+                item.className = 'messier-item';
+                item.dataset.id = obj.id;
+                item.dataset.category = getObjectCategory(obj.type);
+                
+                item.innerHTML = `
+                    <img class="messier-thumb" src="messier_images/${obj.id.replace('M', 'M')}-01n.jpg" 
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23333%22 width=%2250%22 height=%2250%22/%3E%3C/svg%3E'">
+                    <div class="messier-info">
+                        <div class="messier-id">${obj.id}</div>
+                        <div class="messier-name">${obj.name}</div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => loadObject(obj));
+                sidebar.appendChild(item);
+            });
+        }
+
+        function initializeViewer() {
+            viewer = OpenSeadragon({
+                id: "openseadragon-viewer",
+                prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@4.1/build/openseadragon/images/",
+                animationTime: 0.5,
+                blendTime: 0.1,
+                constrainDuringPan: true,
+                maxZoomPixelRatio: 2,
+                minZoomLevel: 0.8,
+                visibilityRatio: 1,
+                zoomPerScroll: 2,
+                showNavigationControl: false
+            });
+
+            viewer.addHandler('open', () => {
+                document.querySelector('.loading').classList.add('hidden');
+            });
+
+            // Load first object
+            if (messierData.length > 0) {
+                loadObject(messierData[0]);
+            }
+        }
+
+        function loadObject(obj) {
+            if (!obj.dziPath) {
+                alert(`DZI file not found for ${obj.id}. Run batch_convert_to_dzi.py first!`);
+                return;
+            }
+
+            currentObject = obj;
+            
+            // Update sidebar selection
+            document.querySelectorAll('.messier-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.id === obj.id);
+            });
+
+            // Load DZI
+            viewer.open(obj.dziPath);
+
+            // Update info panel
+            document.getElementById('info-title').textContent = `${obj.id} - ${obj.name}`;
+            document.getElementById('info-content').innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value">${obj.type}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Constellation:</span>
+                    <span class="info-value">${obj.constellation}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">RA:</span>
+                    <span class="info-value">${obj.ra}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Dec:</span>
+                    <span class="info-value">${obj.dec}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Magnitude:</span>
+                    <span class="info-value">${obj.magnitude}</span>
+                </div>
+            `;
+        }
+
+        // Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            viewer.viewport.zoomBy(1.5);
+            viewer.viewport.applyConstraints();
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            viewer.viewport.zoomBy(0.7);
+            viewer.viewport.applyConstraints();
+        });
+
+        document.getElementById('home').addEventListener('click', () => {
+            viewer.viewport.goHome();
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.type;
+                applyFilter();
+            });
+        });
+
+        function applyFilter() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            
+            document.querySelectorAll('.messier-item').forEach(item => {
+                const obj = messierData.find(m => m.id === item.dataset.id);
+                const category = item.dataset.category;
+                
+                const categoryMatch = currentFilter === 'all' || category === currentFilter;
+                const searchMatch = !searchTerm || 
+                    obj.id.toLowerCase().includes(searchTerm) ||
+                    obj.name.toLowerCase().includes(searchTerm) ||
+                    obj.type.toLowerCase().includes(searchTerm);
+                
+                item.style.display = (categoryMatch && searchMatch) ? 'flex' : 'none';
+            });
+        }
+
+        // Search functionality
+        document.getElementById('search').addEventListener('input', applyFilter);
+    </script>
+</body>
+</html>
