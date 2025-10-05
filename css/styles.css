@@ -4,7 +4,107 @@
   --bg-surface: #050b14;
   --panel: #0a1220;
   
-  /* Accent colors */
+.container{
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Map overlay elements */
+.map-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--glow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--glow-sm);
+  min-width: 200px;
+}
+
+.legend-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-highlight);
+  margin-bottom: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid;
+}
+
+.coordinates-display {
+  position: absolute;
+  bottom: 30px;
+  left: 300px;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--glow-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.coordinates-display span {
+  color: var(--accent-highlight);
+}
+
+.view-mode {
+  position: absolute;
+  top: 20px;
+  left: 300px;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--glow-sm);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.view-mode-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}ccent colors */
   --accent-primary: #007fff;
   --accent-secondary: #00a3ff;
   --accent-highlight: #40cdff;

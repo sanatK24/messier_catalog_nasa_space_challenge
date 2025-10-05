@@ -66,30 +66,41 @@ function hideLoadingScreen() {
 
 async function init(){
   try {
-    updateLoadingProgress(10, 'Loading catalog data...');
+    // Quadrant 1: Data Loading (0-25%)
+    updateLoadingProgress(5, 'INITIALIZING CORE SYSTEMS');
+    await new Promise(r => setTimeout(r, 500));
+    updateLoadingProgress(15, 'Loading catalog data...');
     messier = await fetchJSON(DATA_PATH);
+    updateLoadingProgress(25, 'QUADRANT 1 COMPLETE');
+    await new Promise(r => setTimeout(r, 300));
     
+    // Quadrant 2: Processing (25-50%)
     updateLoadingProgress(30, 'Loading image manifest...');
     const manifest = await fetchJSON(DZI_MANIFEST);
     manifest.forEach(item => dziMap[item.id] = item);
+    updateLoadingProgress(40, 'Processing astronomical data...');
+    await new Promise(r => setTimeout(r, 300));
+    updateLoadingProgress(50, 'QUADRANT 2 COMPLETE');
     
-    updateLoadingProgress(50, 'Building object list...');
+    // Quadrant 3: Interface Setup (50-75%)
+    updateLoadingProgress(55, 'Building object list...');
     buildList();
-    
-    updateLoadingProgress(70, 'Initializing sky map...');
+    updateLoadingProgress(65, 'Initializing sky map...');
     setupMap();
+    updateLoadingProgress(75, 'QUADRANT 3 COMPLETE');
     
-    updateLoadingProgress(85, 'Setting up interface...');
+    // Quadrant 4: Final Systems (75-100%)
+    updateLoadingProgress(80, 'Setting up interface...');
     setupSearch();
     setupFilters();
-    
-    updateLoadingProgress(95, 'Preparing skymap overlay...');
+    updateLoadingProgress(90, 'Preparing skymap overlay...');
     setupSkymapOverlay();
-    
-    updateLoadingProgress(100, 'Launch complete');
+    updateLoadingProgress(95, 'Calibrating final systems...');
+    await new Promise(r => setTimeout(r, 300));
+    updateLoadingProgress(100, 'ALL SYSTEMS ONLINE');
     
     // Hide loading screen after a brief delay
-    setTimeout(hideLoadingScreen, 500);
+    setTimeout(hideLoadingScreen, 800);
   } catch (error) {
     console.error('Initialization error:', error);
     document.querySelector('.status-label').textContent = 'ERROR';

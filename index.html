@@ -102,7 +102,46 @@
       </aside>
 
     <main class="main">
-      <div id="map"></div>
+      <div id="map">
+        <!-- View Mode Toggle -->
+        <div class="view-mode">
+          <span class="view-mode-label">View Mode:</span>
+          <button class="btn btn-sm" onclick="toggleMapView()">Switch View</button>
+        </div>
+
+        <!-- Map Controls -->
+        <div class="map-controls">
+          <button class="btn btn-sm" onclick="zoomToFit()">
+            <i class="fas fa-expand"></i> Fit All
+          </button>
+          <button class="btn btn-sm" onclick="toggleGrid()">
+            <i class="fas fa-th"></i> Toggle Grid
+          </button>
+        </div>
+
+        <!-- Coordinates Display -->
+        <div class="coordinates-display">
+          RA: <span id="ra">--</span> | 
+          Dec: <span id="dec">--</span>
+        </div>
+
+        <!-- Map Legend -->
+        <div class="map-legend">
+          <div class="legend-title">Messier Objects</div>
+          <div class="legend-item">
+            <div class="legend-icon" style="border-color: var(--accent-primary)"></div>
+            <span>Galaxies</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon" style="border-color: var(--accent-secondary)"></div>
+            <span>Nebulae</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon" style="border-color: var(--accent-highlight)"></div>
+            <span>Star Clusters</span>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 

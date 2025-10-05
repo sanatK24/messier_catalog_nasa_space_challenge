@@ -1,0 +1,22 @@
+:root {
+  /* Accent colors */
+  --accent-primary: #007fff;
+  --accent-secondary: #00a3ff;
+  --accent-highlight: #40cdff;
+  --accent-glow: rgba(0, 159, 255, 0.15);
+
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a0b4d0;
+  --text-muted: #627188;
+
+  /* Border and background */
+  --border-light: rgba(64, 205, 255, 0.15);
+  --overlay-surface: rgba(5, 11, 20, 0.8);
+  --bg-surface: rgba(13, 18, 27, 0.95);
+
+  /* Glow effects */
+  --glow-sm: 0 0 8px rgba(0, 159, 255, 0.2);
+  --glow-md: 0 0 16px rgba(0, 159, 255, 0.15);
+  --glow-lg: 0 0 24px rgba(0, 159, 255, 0.1);
+}
