@@ -1,3 +1,7 @@
+<div align="right">
+  <img src="./messier_logo.png" alt="Messier Logo" width="110" style="border-radius:12px;">
+</div>
+
 <h1 align="center">🌌 Messier Deep Sky Navigator</h1>
 
 <p align="center">
